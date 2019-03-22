@@ -1,110 +1,63 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {createStore,combineReducers,bindActionCreators} from './redux'
-import Provider from './Provider';
-import connect from './connect'
+import React from "react";
+import ReactDOM from "react-dom";
+import {createStore,bindActionsCreators} from './redux'
+//reducers 用来处理action返回store
+import reducer from './reducers'
 
-  
-  const reducer = (state = 0, action) => {
+//createStore(reducer,state,enhancer)
+const store = createStore(reducer,{number:0})
 
-    switch (action.type) {
-      case 'INCREMENT': return state + 1;
-      case 'DECREMENT': return state - 1;
-      default: return state;
-    }
-  };
+//const action = action => store.dispatch({type:action})
+const action = bindActionsCreators({
+  increment(){
+    return { type:'INCREMENT'}
+  },
+  decrement(){
+    return { type: 'DECREMENT' }
+  },
+  plus(){
+    return { type: 'PLUS' }
+  },
+  minus(){
+    return { type: 'MINUS' }
+  }
+},store.dispatch)
 
-  const reducer2 = (state = 0, action) => {
-    switch (action.type) {
-      case 'ADD': return state + 1;
-      case 'MINUS': return state - 1;
-      default: return state;
-    }
-  };
-
-  const reducers = combineReducers({
-    reducer,
-    reducer2
-  })
-
-
-const store = createStore(reducers);
-const actions = {
-    add(){
-        return {type: 'ADD'}
-    },
-    minus(){
-        return {type: 'MINUS'}
-    }
-}
-
-const actions2 = {
-    onIncrement(){
-        return {type: 'INCREMENT'}
-    },
-    onDecrement(){
-        return {type: 'DECREMENT'}
-    }
-}
-const newActions = bindActionCreators(
-    actions,
-    store.dispatch
-)
-
-
-
-let Counter = ({value,onIncrement,onDecrement}) => {
-    return (
+const Counter1 = () => {
+  return (
     <div>
-    <h1>{value}</h1>
-    <button onClick={onIncrement}>+</button>
-    <button onClick={onDecrement}>-</button>
+      <h1>{store.getState().counter1.number}</h1>
+      <button onClick={() => action.increment()}>+</button>
+      <button onClick={() => action.decrement()}>-</button>
     </div>
-  )};
-Counter = connect(
-    state=>({value:state.reducer}),
-    actions2
-)(Counter)
+  )
+}
 
-
-const Counter2 = ({ value, onIncrement, onDecrement }) => (
+const Counter2 = () => {
+  return (
     <div>
-    <h1>{value}</h1>
-    <button onClick={onIncrement}>+</button>
-    <button onClick={onDecrement}>-</button>
+      <h1>{store.getState().counter2.number}</h1>
+      <button onClick={() => action.plus()}>+</button>
+      <button onClick={() => action.minus()}>-</button>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <div className="App">
+      <Counter1/>
+      <Counter2/>
     </div>
   );
+}
+const rootElement = document.getElementById("root");
 
-  const App = (props,context) => {
-      return (
-        <React.Fragment>
-             <Counter
-                // value={store.getState().reducer}
-                // onIncrement={() => store.dispatch({type: 'INCREMENT'})}
-                // onDecrement={() => store.dispatch({type: 'DECREMENT'})}
-            />
-             <Counter2
-                value={store.getState().reducer2}
-                onIncrement={() => newActions.add()}
-                onDecrement={() => newActions.minus()}
-            />
-        </React.Fragment>
-      )
-  }     
- 
-  const render = () => {
-    ReactDOM.render(
-    (
-        <Provider store={store}>
-            <App/>
-        </Provider>
-    ),
-      document.getElementById('root')
-    );
-  };
-  
-  render();
-  store.subscribe(render);
+function render(){
 
+  ReactDOM.render(<App />, rootElement);
+}
+render()
 
-
+const unsubscribe = store.subscribe(render)
+unsubscribe(render)
