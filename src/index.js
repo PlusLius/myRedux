@@ -1,11 +1,38 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {createStore,bindActionsCreators} from './redux'
+import {createStore,bindActionsCreators,applyMiddleware} from './redux'
 //reducers 用来处理action返回store
 import reducer from './reducers'
+import "./styles.css";
 
 //createStore(reducer,state,enhancer)
-const store = createStore(reducer,{number:0})
+const middleware1 = ({ dispatch, getState}) => next => action => {
+  console.log('middleware1')
+  let res = next(action)
+  console.log('after middleware1')
+  return res
+}
+const middleware2 = ({ dispatch, getState }) => next => action => {
+  console.log('middleware2')
+  let res = next(action)
+  console.log('after middleware2')
+  return res
+}
+const middleware3 = ({ dispatch, getState }) => next => action => {
+  console.log('middleware3')
+  let res = next(action)
+  console.log('after middleware3')
+  return res
+}
+
+
+const store = createStore(reducer, { number: 0 }, applyMiddleware(
+  middleware1,
+  middleware2,
+  middleware3
+))
+
+
 
 //const action = action => store.dispatch({type:action})
 const action = bindActionsCreators({
