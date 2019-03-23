@@ -236,3 +236,69 @@ export default function applyMiddleware(...middlewares){
     }
 }
 ```
+
+## react-redux 
+
+
+### Provider
+
+```js
+class Provider extends React.Component{
+//静态属性childContextTypes声明提供给子组件的Context对象的属性，并实现一个实例getChildContext方法，返回一个代表Context的纯对象 (plain object) 。
+    static childContextTypes = {
+        store:propTypes.object.isRequired
+    }
+    getChildContext(){
+        return {
+            store:this.props.store
+        }
+    }
+    render(){
+        return this.props.children
+    }
+}
+```
+
+### Connect
+
+```js
+function Connect(mapStateToProps,mapDispatchToProps){
+    return function(WrapedComponent){
+        class ProxyComponent extends React.Component {
+        //子组件需要通过一个静态属性contextTypes声明后，才能访问父组件Context对象的属性，否则，即使属性名没写错，拿到的对象也是undefined。
+            static contextTypes = {
+                store:propTypes.object
+            }
+            constructor(props,context){
+                super(props,context)
+                this.store = context.store
+                   //初始化state
+                this.state = mapStateToProps(
+                    this.store.getState()
+                )
+            }
+            componentWillMount(){
+            //当state发生变化的时候通过setState更新组件的变化
+                this.unsubscribe = this.store.subscribe(()=>{
+                this.setState(mapStateToProps(this.store.getState()));
+              });
+            }
+             componentWillUnmount(){
+             //当组件删除的时候取消监听state的变化
+              this.unsubscribe();
+            }
+            render(){
+               let actions = {}
+               if(typeof mapDispatchToProps == 'function'){
+                actions = mapDispatchToProps(this.store.disaptch);
+              }else if(typeof mapDispatchToProps == 'object'){
+                actions = bindActionCreators(mapDispatchToProps,this.store.dispatch);
+              }
+              return <WrapedComponent {...this.state} {...actions}/>
+            }
+        }
+        return ProxyComponent
+    }
+}
+
+```
