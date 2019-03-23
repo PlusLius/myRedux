@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import {connect,Provider} from './react-redux'
 import {createStore,bindActionsCreators,applyMiddleware} from './redux'
 //reducers 用来处理action返回store
 import reducer from './reducers'
@@ -50,25 +51,52 @@ const action = bindActionsCreators({
   }
 },store.dispatch)
 
-const Counter1 = () => {
+const actions = {
+  increment() {
+    return { type: 'INCREMENT' }
+  },
+  decrement() {
+    return { type: 'DECREMENT' }
+  },
+  plus() {
+    return { type: 'PLUS' }
+  },
+  minus() {
+    return { type: 'MINUS' }
+  }
+}
+
+let Counter1 = (props) => {
   return (
     <div>
-      <h1>{store.getState().counter1.number}</h1>
-      <button onClick={() => action.increment()}>+</button>
-      <button onClick={() => action.decrement()}>-</button>
+      <h1>{props.number}</h1>
+      <button onClick={() => props.increment()}>+</button>
+      <button onClick={() => props.decrement()}>-</button>
     </div>
   )
 }
 
-const Counter2 = () => {
+Counter1 = connect(state => {
+  return state.counter1
+}, actions)(
+  Counter1
+)
+
+
+let Counter2 = (props) => {
   return (
     <div>
-      <h1>{store.getState().counter2.number}</h1>
-      <button onClick={() => action.plus()}>+</button>
-      <button onClick={() => action.minus()}>-</button>
+      <h1>{props.number}</h1>
+      <button onClick={() => props.plus()}>+</button>
+      <button onClick={() => props.minus()}>-</button>
     </div>
   )
 }
+
+Counter2 = connect(state => state.counter2, actions)(
+  Counter2
+)
+
 
 function App() {
   return (
@@ -80,11 +108,13 @@ function App() {
 }
 const rootElement = document.getElementById("root");
 
-function render(){
+//function render(){
+  ReactDOM.render(
+   <Provider store={store}>
+      <App/>
+   </Provider> , rootElement);
+//}
+//render()
 
-  ReactDOM.render(<App />, rootElement);
-}
-render()
-
-const unsubscribe = store.subscribe(render)
-unsubscribe(render)
+//const unsubscribe = store.subscribe(render)
+//unsubscribe(render)
